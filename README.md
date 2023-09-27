@@ -119,29 +119,29 @@
 	
     - Create a DNS record on your machine pointing to the K3S VM (e.g.: `dashboard.k3s.local`)
       
-  Apply the following:
-
-   ```bash
-	cat <<EOF | kubectl apply -f -
-	apiVersion: networking.k8s.io/v1
-	kind: Ingress
-	metadata:
-	  name: kubernetes-dashboard
-	  namespace: kubernetes-dashboard
-	spec:
-	  rules:
-	  - host: "dashboard.k3s.local"
-	    http:
-	      paths:
-	      - pathType: Prefix
-	        path: /
-	        backend:
-	          service:
-	            name: kubernetes-dashboard
-	            port:
-	              number: 443
-	EOF
-   ```
+    - Apply the following:
+	
+	   ```bash
+		cat <<EOF | kubectl apply -f -
+		apiVersion: networking.k8s.io/v1
+		kind: Ingress
+		metadata:
+		  name: kubernetes-dashboard
+		  namespace: kubernetes-dashboard
+		spec:
+		  rules:
+		  - host: "dashboard.k3s.local"
+		    http:
+		      paths:
+		      - pathType: Prefix
+		        path: /
+		        backend:
+		          service:
+		            name: kubernetes-dashboard
+		            port:
+		              number: 443
+		EOF
+	   ```
 
 8. Install Kong
 
