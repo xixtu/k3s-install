@@ -113,24 +113,24 @@
       
   Apply the following:
   
-```yaml
-cat <<EOF | kubectl apply -f -
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: kubernetes-dashboard
-  namespace: kubernetes-dashboard
-spec:
-  rules:
-  - host: "dashboard.k3s.local"
-    http:
-      paths:
-      - pathType: Prefix
-        path: /
-        backend:
-          service:
-            name: kubernetes-dashboard
-            port:
-              number: 443
-EOF
-```
+	```yaml
+	cat <<EOF | kubectl apply -f -
+	apiVersion: networking.k8s.io/v1
+	kind: Ingress
+	metadata:
+	  name: kubernetes-dashboard
+	  namespace: kubernetes-dashboard
+	spec:
+	  rules:
+	  - host: "dashboard.k3s.local"
+	    http:
+	      paths:
+	      - pathType: Prefix
+	        path: /
+	        backend:
+	          service:
+	            name: kubernetes-dashboard
+	            port:
+	              number: 443
+	EOF
+	```
