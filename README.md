@@ -83,7 +83,7 @@
       kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
       ```
 
-    c. Access through Kubernetes API:
+    c. (Optional) Access through Kubernetes API:
 
       ```yaml
       kubectl port-forward -n kubernetes-dashboard svc/kubernetes-dashboard 8443:443
@@ -91,6 +91,14 @@
 
      - Go to https://127.0.0.1:8443/
      - Paste the `$TOKEN` value
+  
+     d. (Only if NGINX Ingress Controller is not installed) Change the kubernetes-dashboard service to LoadBalancer type:
+
+	```bash
+	kubectl edit service kubernetes-dashboard -n kubernetes-dashboard
+	```
+	- Change `spec.type` to `LoadBalancer`
+	- Go directly to step 7
 
 6. (Not needed) Install NGINX Ingress Controller
 
@@ -112,8 +120,8 @@
     - Create a DNS record on your machine pointing to the K3S VM (e.g.: `dashboard.k3s.local`)
       
   Apply the following:
-  
-	```yaml
+
+   ```bash
 	cat <<EOF | kubectl apply -f -
 	apiVersion: networking.k8s.io/v1
 	kind: Ingress
@@ -133,4 +141,13 @@
 	            port:
 	              number: 443
 	EOF
-	```
+   ```
+
+8. Install Kong
+
+   ```bash
+   helm pull kong/kong --untar --version 2.26.3
+   cd kong
+   wget https://raw.githubusercontent.com/remblondel/k3s-install/main/kong-values.yaml
+   helm install kong -n kong ./ -f kong-values.yaml --create-namespace
+   ```
