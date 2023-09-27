@@ -4,8 +4,7 @@
      curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server" sh -s - \
      --tls-san k3s.local \
      --write-kubeconfig-mode 644 \
-     --disable traefik \
-     --disable servicelb
+     --disable traefik
      ```
 
 2. Copy Kubeconfig file on local machine
@@ -37,37 +36,43 @@
    
       Apply the following:
    
-        ```yaml
-        cat <<EOF | kubectl apply -f -
-          apiVersion: v1
-          kind: ServiceAccount
-          metadata:
-            name: admin-user
-            namespace: kube-system
-          ---
-          apiVersion: rbac.authorization.k8s.io/v1
-          kind: ClusterRoleBinding
-          metadata:
-            name: admin-user
-          roleRef:
-            apiGroup: rbac.authorization.k8s.io
-            kind: ClusterRole
-            name: cluster-admin
-          subjects:
-          - kind: ServiceAccount
-            name: admin-user
-            namespace: kube-system
-          ---
-          apiVersion: v1
-          kind: Secret
-          metadata:
-            name: admin-token
-            namespace: kube-system
-            annotations:
-              kubernetes.io/service-account.name: admin-user
-          type: kubernetes.io/service-account-token
-        EOF
-        ```
+	```yaml
+	cat <<EOF | kubectl apply -f -
+	apiVersion: v1
+	kind: ServiceAccount
+	metadata:
+	  name: admin-user
+	  namespace: kube-system
+	EOF
+ 	```
+ 	```yaml
+ 	cat <<EOF | kubectl apply -f -
+	apiVersion: rbac.authorization.k8s.io/v1
+	kind: ClusterRoleBinding
+	metadata:
+	  name: admin-user
+	roleRef:
+	  apiGroup: rbac.authorization.k8s.io
+	  kind: ClusterRole
+	  name: cluster-admin
+	subjects:
+	- kind: ServiceAccount
+	  name: admin-user
+	  namespace: kube-system
+	EOF
+	```
+ 	```yaml
+ 	cat <<EOF | kubectl apply -f -
+	apiVersion: v1
+	kind: Secret
+	metadata:
+	  name: admin-token
+	  namespace: kube-system
+	  annotations:
+	    kubernetes.io/service-account.name: admin-user
+	type: kubernetes.io/service-account-token
+	EOF
+	```
 
     b. Install:
 
@@ -87,7 +92,7 @@
      - Go to https://127.0.0.1:8443/
      - Paste the `$TOKEN` value
 
-6. Install NGINX Ingress Controller
+6. (Not needed) Install NGINX Ingress Controller
 
     Documentation: https://kubernetes.github.io/ingress-nginx/deploy/#quick-start
   
@@ -108,27 +113,24 @@
       
   Apply the following:
   
-    ```yaml
-    cat <<EOF | kubectl apply -f -
-      apiVersion: networking.k8s.io/v1
-      kind: Ingress
-      metadata:
-        name: kubernetes-dashboard
-        namespace: kubernetes-dashboard
-        annotations:
-          nginx.ingress.kubernetes.io/backend-protocol: HTTPS
-      spec:
-        ingressClassName: nginx
-        rules:
-        - host: "dashboard.k3s.local"
-          http:
-            paths:
-            - pathType: Prefix
-              path: /
-              backend:
-                service:
-                  name: kubernetes-dashboard
-                  port:
-                    number: 443
-    EOF
-    ```
+```yaml
+cat <<EOF | kubectl apply -f -
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kubernetes-dashboard
+  namespace: kubernetes-dashboard
+spec:
+  rules:
+  - host: "dashboard.k3s.local"
+    http:
+      paths:
+      - pathType: Prefix
+        path: /
+        backend:
+          service:
+            name: kubernetes-dashboard
+            port:
+              number: 443
+EOF
+```
