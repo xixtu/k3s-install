@@ -98,15 +98,17 @@ env:
   proxy_access_log: /dev/stdout
   admin_access_log: /dev/stdout
   admin_gui_access_log: /dev/stdout
+  admin_listen: "0.0.0.0:8001"
+  # admin_gui_listen: "0.0.0.0"
   portal_api_access_log: /dev/stdout
   proxy_error_log: /dev/stderr
   admin_error_log: /dev/stderr
   admin_gui_error_log: /dev/stderr
   portal_api_error_log: /dev/stderr
   prefix: /kong_prefix/
-  admin_api_uri: "kong-admin.k3s.local"
-  admin_uri: "kong-manager.k3s.local"
-  portal_host: "kong-dev-portal.k3s.local"
+  admin_gui_api_uri: "kong-admin.CLUSTER_APPS_FQDN"
+  admin_gui_uri: "kong-manager.CLUSTER_APPS_FQDN"
+  portal_gui_host: "kong-dev-portal.CLUSTER_APPS_FQDN"
 
 # This section is any customer specific environments variables that doesn't require KONG_ prefix.
 # These custom environment variables are typicall used in custom plugins or serverless plugins to
@@ -193,20 +195,20 @@ admin:
   # API of Kong outside the k8s cluster.
   ingress:
     # Enable/disable exposure using ingress.
-    enabled: true
-    ingressClassName: kong
+    enabled: false
+    ingressClassName: standard
     # TLS secret name.
-    # tls: kong-admin-tls
+    # tls: kong-admin.example.com-tls
     # Ingress hostname
-    #tls: kong-admin-tls
+    tls: kong-admin-tls
 
     # hosts:
     #   - host: kong-admin.fgounot.cloud.ccl-consulting.fr
     # hostname:
-    hostname: kong-admin.k3s.local
+    hostname: kong-admin.CLUSTER_APPS_FQDN
     # Map of ingress annotations.
     # annotations: {cert-manager.io/cluster-issuer: ca-issuer-clusterwide}
-    annotations: {}
+    annotations: {"konghq.com/protocols":"https","konghq.com/https-redirect-status-code":"308"}
     # Ingress path.
     path: /
     # Each path in an Ingress is required to have a corresponding path type. (ImplementationSpecific/Exact/Prefix)
@@ -282,12 +284,15 @@ proxy:
   # Enable creating a Kubernetes service for the proxy
   enabled: true
   type: LoadBalancer
+#  externalTrafficPolicy: Local
   loadBalancerClass:
   # Override proxy Service name
   nameOverride: ""
   # To specify annotations or labels for the proxy service, add them to the respective
   # "annotations" or "labels" dictionaries below.
-  annotations: {}
+#  annotations:
+#    service.beta.kubernetes.io/aws-load-balancer-type: nlb
+#    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: "ip"
   # If terminating TLS at the ELB, the following annotations can be used
   # "service.beta.kubernetes.io/aws-load-balancer-backend-protocol": "*",
   # "service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled": "true",
@@ -589,9 +594,10 @@ ingressController:
       # Specify custom labels for the validation webhook service.
       labels: {}
 
-  ingressClass: kong
+  ingressClass: standard
   # annotations for IngressClass resource (Kubernetes 1.18+)
-  ingressClassAnnotations: {}
+  ingressClassAnnotations:
+    ingressclass.kubernetes.io/is-default-class: true
 
   ## Define any volumes and mounts you want present in the ingress controller container
   ## Volumes are defined above in deployment.userDefinedVolumes
@@ -716,12 +722,12 @@ postgresql:
 # -----------------------------------------------------------------------------
 
 certificates:
-  enabled: false
+  enabled: true
 
   # Set either `issuer` or `clusterIssuer` to the name of the desired cert manager issuer
   # If left blank a built in self-signed issuer will be created and utilized
   issuer: ""
-  clusterIssuer: ""
+  clusterIssuer: "ca-issuer-clusterwide"
 
   # Set proxy.enabled to true to issue default kong-proxy certificate with cert-manager
   proxy:
@@ -741,28 +747,29 @@ certificates:
 
   # Set admin.enabled true to issue kong admin api and manager certificate with cert-manager
   admin:
+    ## Certificate is not created because helm is unable to validate the following: .Capabilities.APIVersions.Has "cert-manager.io/v1"
     enabled: true
     # Set `issuer` or `clusterIssuer` to name of alternate cert-manager clusterIssuer to override default
     # self-signed issuer.
     issuer: ""
-    clusterIssuer: ""
+    clusterIssuer: "ca-issuer-clusterwide"
     # Use commonName and dnsNames to set the common name and dns alt names which this
     # certificate is valid for. Wildcard records are supported by the included self-signed issuer.
-    commonName: "kong-admin.k3s.local"
+    commonName: "kong-admin.CLUSTER_APPS_FQDN"
     # Remove the "[]" and uncomment/change the examples to add SANs
     dnsNames: []
     # - "manager.kong.example"
 
   # Set portal.enabled to true to issue a developer portal certificate with cert-manager
   portal:
-    enabled: true
+    enabled: false
     # Set `issuer` or `clusterIssuer` to name of alternate cert-manager clusterIssuer to override default
     # self-signed issuer.
     issuer: ""
     clusterIssuer: ""
     # Use commonName and dnsNames to set the common name and dns alt names which this
     # certificate is valid for. Wildcard records are supported by the included self-signed issuer.
-    commonName: "kong-dev-portal.k3s.local"
+    commonName: "kong-dev-portal.CLUSTER_APPS_FQDN"
     # Remove the "{}" and uncomment/change the examples to add SANs
     dnsNames: []
     # - "manager.kong.example"
@@ -1006,7 +1013,7 @@ enterprise:
   vitals:
     enabled: true
   portal:
-    enabled: true
+    enabled: false
   rbac:
     enabled: false
     admin_gui_auth: basic-auth
@@ -1075,14 +1082,14 @@ manager:
   ingress:
     # Enable/disable exposure using ingress.
     enabled: true
-    ingressClassName: kong
+    ingressClassName: standard
     # TLS secret name.
     # tls: kong-manager.example.com-tls
-    # tls: kong-manager-tls
+    tls: kong-manager-tls
     # Ingress hostname
-    hostname: kong-manager.k3s.local
+    hostname: kong-manager.CLUSTER_APPS_FQDN
     # Map of ingress annotations.
-    annotations: {cert-manager.io/cluster-issuer: ca-issuer-clusterwide}
+    annotations: {"konghq.com/protocols":"https", "konghq.com/https-redirect-status-code":"308", cert-manager.io/cluster-issuer: ca-issuer-clusterwide}
     # Ingress path.
     path: /
     # Each path in an Ingress is required to have a corresponding path type. (ImplementationSpecific/Exact/Prefix)
@@ -1090,7 +1097,7 @@ manager:
 
 portal:
   # Enable creating a Kubernetes service for the Developer Portal
-  enabled: true
+  enabled: false
   type: NodePort
   loadBalancerClass:
   # To specify annotations or labels for the Portal service, add them to the respective
@@ -1123,14 +1130,14 @@ portal:
   ingress:
     # Enable/disable exposure using ingress.
     enabled: false
-    ingressClassName: kong
+    ingressClassName: standard
     # TLS secret name.
     # tls: kong-portal.example.com-tls
-    # tls: kong-dev-portal-tls
+    tls: kong-dev-portal-tls
     # Ingress hostname
-    hostname: kong-dev-portal.k3s.local
+    hostname: kong-dev-portal.CLUSTER_APPS_FQDN
     # Map of ingress annotations.
-    annotations: {}
+    annotations: {cert-manager.io/cluster-issuer: ca-issuer-clusterwide}
     # Ingress path.
     path: /
     # Each path in an Ingress is required to have a corresponding path type. (ImplementationSpecific/Exact/Prefix)
@@ -1138,7 +1145,7 @@ portal:
 
 portalapi:
   # Enable creating a Kubernetes service for the Developer Portal API
-  enabled: true
+  enabled: false
   type: NodePort
   loadBalancerClass:
   # To specify annotations or labels for the Portal API service, add them to the respective

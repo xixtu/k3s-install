@@ -1,0 +1,17 @@
+alertmanager:
+  enabled: false
+
+grafana:
+  enabled: true
+  ingress:
+    enabled: true
+    ingressClassName: standard
+    hosts:
+      - grafana.CLUSTER_APPS_FQDN
+
+prometheus:
+  ingress:
+    enabled: true
+    ingressClassName: standard
+    hosts:
+      - prometheus.CLUSTER_APPS_FQDN
