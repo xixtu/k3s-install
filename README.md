@@ -33,6 +33,12 @@
          kubectl rollout restart deployment coredns -n kube-system
          ```
 
+      - Prerequisite for NFS Storage Provisioner:
+        ```bash
+        yum install nfs-utils
+        ```
+         
+
     - Registry configuration
 
         Documentation: https://docs.k3s.io/installation/private-registry
@@ -66,14 +72,14 @@
         ```
    
 
-2. Copy Kubeconfig file on local machine
+1. Copy Kubeconfig file on local machine
 
       ```bash
       scp <USER>@<K3S_SERVER>:/etc/rancher/k3s/k3s.yaml ~/.kube/config-k3s
       sed -i 's/127.0.0.1/<CLUSTER_FQDN>/g' ~/.kube/config-k3s
       ```
 
-3. Install kubectl on local machine
+2. Install kubectl on local machine
 
     Documentation: https://kubernetes.io/fr/docs/tasks/tools/install-kubectl/
 
@@ -89,7 +95,7 @@
     kubectl get nodes
     ```
 
-4. Install Kong
+3. Install Kong
 
    a. Get the helm values file and update its content:
    ```bash
@@ -201,8 +207,18 @@
    ```
    kubectl scale deployment/portainer-agent --replicas=2 -n portainer
    ```
-   
-7. Install Kube-Prometheus-Stack
+
+7. Install NFS Provisioner
+
+   Documentation: [https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/](https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner)
+
+   ```bash
+   helm repo add nfs-subdir-external-provisioner https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner
+   helm install nfs-subdir-external-provisioner nfs-subdir-external-provisioner/nfs-subdir-external-provisioner \
+     --set nfs.server=x.x.x.x \
+     --set nfs.path=/exported/path
+
+9. Install Kube-Prometheus-Stack
 
    a. Get the helm values file and update its content:
    ```bash
