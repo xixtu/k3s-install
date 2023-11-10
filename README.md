@@ -11,6 +11,7 @@
       - Install command:
           ```bash
           curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server" sh -s - \
+          --cluster-init \
           --tls-san <CLUSTER_FQDN> \
           --write-kubeconfig-mode 644 \
           --disable traefik
