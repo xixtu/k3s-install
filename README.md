@@ -1,10 +1,5 @@
 1. Install K3S Nodes
 
-    a. Prerequisite:
-
-    ```bash
-    dnf config-manager --setopt strict=False --setopt best=False --save
-    ```
 
     b. Server Node installation
 
