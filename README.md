@@ -6,15 +6,10 @@
       - Install command:
           ```bash
           curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server" sh -s - \
+          --cluster-init \
           --tls-san <CLUSTER_FQDN> \
           --write-kubeconfig-mode 644 \
           --disable traefik
-          ```
-      - Install command for the next server nodes:
-          ```bash
-          curl -sfL https://get.k3s.io | K3S_TOKEN=<TOKEN> sh -s - server \
-              --server https://<ip or hostname of server1>:6443 \
-              --tls-san=<CLUSTER_FQDN>
           ```
 
       - DNS configuration (if caching is enabled):
@@ -51,10 +46,17 @@
         kubectl taint node <K3S_MASTER_NODE_NAME> node-role.kubernetes.io/master=effect:NoSchedule
         ```
 
-    - Save token for Agent Node installation   
+    - Save token for other nodes installation   
         ```bash
         cat /var/lib/rancher/k3s/server/token
         ```
+        
+     - Install command for the next server nodes:
+         ```bash
+         curl -sfL https://get.k3s.io | K3S_TOKEN=<TOKEN> sh -s - server \
+             --server https://<ip or hostname of server1>:6443 \
+             --tls-san=<CLUSTER_FQDN>
+         ```
 
     b. Agent Node installation
 
